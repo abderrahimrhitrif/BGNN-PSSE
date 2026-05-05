@@ -5,10 +5,11 @@ import pandas as pd
 import pandapower as pp
 import pandapower.networks as pn
 from pandapower.pypower.makeYbus import makeYbus
+from tqdm import tqdm
 
 
 # ── Configuration ──────────────────────────────────────────────────────────────
-TOTAL_SAMPLES  = 100
+TOTAL_SAMPLES  = 10000
 TRAIN_FRAC     = 0.70
 VAL_FRAC       = 0.15
 TEST_FRAC      = 0.15
@@ -201,6 +202,7 @@ def generate_samples(N, seed):
     COV = np.zeros((N, M//2))
 
     k = 0
+    pbar = tqdm(total=N, desc="Generating Power Grid Samples")
     while k < N:
         net = perturb_and_solve(base, rng)
         if net is None:
@@ -217,6 +219,9 @@ def generate_samples(N, seed):
                                    n_line, n_pinj, n_theta)
 
         k += 1
+        pbar.update(1)
+    
+    pbar.close()
 
     return X, Z, VAR, COV, M, n_buses
 

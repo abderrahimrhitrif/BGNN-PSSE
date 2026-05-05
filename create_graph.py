@@ -122,11 +122,8 @@ class PowerGridDataset(InMemoryDataset):
         
         encoded_indices = torch.tensor(encode_variable_node_indices(numVariableNodes), dtype=torch.float)
 
-        print(f"Vectorizing {numGraphs} graphs into HeteroData objects...")
-        for iGraph in range(numGraphs):
-            if iGraph % 100 == 0 and iGraph > 0:
-                print(f"Processed {iGraph}/{numGraphs} graphs...")
-
+        print(f"Vectorizing {numGraphs} graphs into HeteroData objects ({self.dataset_type})...")
+        for iGraph in tqdm(range(numGraphs), desc=f"Processing {self.dataset_type}"):
             data = HeteroData()
             
             # Variables
@@ -174,4 +171,5 @@ if __name__ == "__main__":
     
     print(f"Success! Train graphs: {len(train_dataset)}")
     print(f"Success! Validation graphs: {len(val_dataset)}")
+    print(f"Success! Test graphs: {len(test_dataset)}")val_dataset)}")
     print(f"Success! Test graphs: {len(test_dataset)}")
