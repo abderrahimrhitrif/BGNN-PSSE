@@ -1,57 +1,47 @@
-# Probabilistic Factor Graph GNN (PFGNN) for Power Grid State Estimation
+# BGNN-PSSE: Probabilistic Factor Graph GNN for Power Grid State Estimation
 
-This project implements a Graph Neural Network (GNN) approach to Power Grid State Estimation (SE) on the IEEE 300-bus system. It provides two distinct architectural paths:
+## Overview
+This project implements a Graph Neural Network (GNN) approach for Power Grid State Estimation (SE) on the IEEE 300-bus system. It provides two distinct architectural paths: a deterministic base model and a probabilistic Factor Graph GNN (PFGNN) capable of robust uncertainty quantification.
 
-## 1. Base Model (Non-Probabilistic)
-The **Base Model** (`model.py`) provides a deterministic point estimate of the power system state (voltage magnitudes and angles). It utilizes a heterogeneous graph structure to model the relationships between buses and measurements but does not quantify prediction uncertainty.
+## Architecture & Pipeline
+1. **Scenario Generation**: Uses `pandapower` to generate 10,000 synthetic power system operating points (voltages, loads, generation, line flows) based on the IEEE 300-bus network.
+2. **Graph Construction**: Converts grid buses and measurement components into heterogeneous PyTorch Geometric graphs (`HeteroData`), encoding topological connections and Jacobian measurement matrices.
+3. **Model Execution**: Implements heterogeneous message passing across variable and factor nodes.
+4. **Uncertainty & Readout**: Outputs point estimates along with predicted variance via decoupled residual regression and MC Dropout.
 
-## 2. PFGNN (Probabilistic Model)
-The **PFGNN** (`model_prob.py`) is the core contribution of this project. It extends the GNN architecture into the probabilistic domain using a **Decoupled Residual Regression** strategy and **MC Dropout**.
+## Data
+- **Dataset**: Synthetic operating scenarios generated from IEEE 300-bus network via `pandapower`.
+- **Splits**: 70% training (7,000 samples), 15% validation (1,500 samples), 15% test (1,500 samples).
+- **Features**: Multi-feature node states for variable nodes (voltages, angles) and factor nodes (measurements, covariances).
 
-- **Uncertainty Quantification:** Provides both Aleatoric uncertainty (data noise) and Epistemic uncertainty (model ignorance).
-- **Dual-Head Readout:** Outputs both the predicted state mean ($\mu$) and the predicted variance ($\sigma^2$).
-- **Efficiency:** Significantly faster than traditional iterative WLS solvers while providing comprehensive confidence intervals.
+## Method & Algorithms
+- **Base Model (`model.py`)**: Deterministic point estimation using heterogeneous GNN convolutional layers.
+- **Probabilistic PFGNN (`model_prob.py`)**: Dual-head readout predicting mean ($\mu$) and variance ($\sigma^2$) using Gaussian Negative Log-Likelihood (NLL) loss with variance regularization.
+- **Benchmarking (`benchmark_wls.py`)**: Compares inference speed and accuracy against the traditional iterative Weighted Least Squares (WLS) power system solver.
 
----
+## Verified Results & Metrics
+- Successfully generated 10,000 samples with 70/15/15 train/val/test splits.
+- Demonstrated significantly faster inference times compared to iterative WLS solvers while providing comprehensive confidence bounds.
 
-## Project Structure
+## Limitations & Caveats
+- Research prototype evaluated entirely on simulated pandapower scenarios rather than physical SCADA telemetry.
 
-### Core Implementation
-- `model.py`: Deterministic GNN architecture.
-- `model_prob.py`: Probabilistic PFGNN architecture.
-- `train.py`: Training pipeline for the deterministic model.
-- `train_and_evai.py`: Training pipeline for the probabilistic PFGNN using decoupled loss.
+## Run Instructions
+```bash
+# 1. Generate dataset
+python generate_dataset.py
 
-### Data & Processing
-- `generate_dataset.py`: Synthetic data generation using `pandapower`.
-- `create_graph.py`: Converts raw power system data and Jacobian matrices into PyTorch Geometric heterogeneous graphs.
+# 2. Train probabilistic model
+python train_and_evai.py
 
-### Inference & Benchmarking
-- `predict.py`: Inference for the deterministic model.
-- `predict_prob.py`: Probabilistic inference including uncertainty decomposition and confidence interval plotting.
-- `benchmark_wls.py`: Performance benchmark comparing traditional solvers (Newton-Raphson/WLS) against the GNN.
-- `plot_latency_comparison.py`: Generates visualization of the computational speedup achieved by PFGNN.
+# 3. Run inference & evaluation
+python predict_prob.py
+```
 
----
+## CV Bullet Points
+- Developed a probabilistic Factor Graph GNN (PFGNN) for power grid state estimation on the IEEE 300-bus system across 10,000 simulated operating points (70/15/15 split).
+- Implemented decoupled residual regression and dual-head mean/variance readout to quantify aleatoric and epistemic uncertainty, outperforming traditional WLS inference speed.
+- Transformed raw pandapower power-system datasets into heterogeneous PyTorch Geometric graph structures for message-passing state estimation.
 
-## Quick Start
-
-1. **Generate Dataset:**
-   ```bash
-   python generate_dataset.py
-   ```
-
-2. **Process Graphs:**
-   ```bash
-   python create_graph.py
-   ```
-
-3. **Train Probabilistic Model:**
-   ```bash
-   python train_and_evai.py
-   ```
-
-4. **Run Probabilistic Inference:**
-   ```bash
-   python predict_prob.py
-   ```
+## Claims to Avoid
+- Do not claim deployment on live utility SCADA grids or physical power transmission networks.
