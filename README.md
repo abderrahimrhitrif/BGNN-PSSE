@@ -38,10 +38,5 @@ python train_and_evai.py
 python predict_prob.py
 ```
 
-## CV Bullet Points
-- Developed a probabilistic Factor Graph GNN (PFGNN) for power grid state estimation on the IEEE 300-bus system across 10,000 simulated operating points (70/15/15 split).
-- Implemented decoupled residual regression and dual-head mean/variance readout to quantify aleatoric and epistemic uncertainty, outperforming traditional WLS inference speed.
-- Transformed raw pandapower power-system datasets into heterogeneous PyTorch Geometric graph structures for message-passing state estimation.
-
 ## Claims to Avoid
 - Do not claim deployment on live utility SCADA grids or physical power transmission networks.
