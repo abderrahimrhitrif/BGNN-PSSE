@@ -37,6 +37,3 @@ python train_and_evai.py
 # 3. Run inference & evaluation
 python predict_prob.py
 ```
-
-## Claims to Avoid
-- Do not claim deployment on live utility SCADA grids or physical power transmission networks.
